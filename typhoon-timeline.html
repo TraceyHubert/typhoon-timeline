@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Typhoon — World Finals Timeline</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --teal:    #1D9E75;
+    --teal-lt: #9FE1CB;
+    --teal-dk: #085041;
+    --red:     #E24B4A;
+    --grey:    #888780;
+    --grey-lt: #D3D1C7;
+    --bg:      #F7F6F2;
+    --card:    #FFFFFF;
+    --text:    #2C2C2A;
+    --muted:   #5F5E5A;
+    --border:  #D3D1C7;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:     #1a1a18;
+      --card:   #242422;
+      --text:   #E8E6DF;
+      --muted:  #9C9A92;
+      --border: #3a3a38;
+    }
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 36px 28px;
+    width: 100%;
+    max-width: 680px;
+  }
+
+  .header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+
+  .title {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal);
+  }
+
+  .date-today {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Stats row ── */
+  .stats {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .stat {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+
+  .stat-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .stat.complete .stat-value { color: var(--teal); }
+  .stat.elapsed  .stat-value { color: var(--text); }
+  .stat.remain   .stat-value { color: var(--text); }
+
+  /* ── Track ── */
+  .track-wrap {
+    position: relative;
+    margin-bottom: 12px;
+  }
+
+  .track {
+    height: 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    overflow: visible;
+    position: relative;
+  }
+
+  .track-fill {
+    height: 100%;
+    background: var(--teal);
+    border-radius: 99px;
+    transition: width 0.6s ease;
+    position: relative;
+  }
+
+  /* Today pin */
+  .today-pin {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 18px;
+    height: 18px;
+    background: var(--card);
+    border: 2.5px solid var(--red);
+    border-radius: 50%;
+    z-index: 2;
+  }
+
+  .today-pin::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 7px;
+    height: 7px;
+    background: var(--red);
+    border-radius: 50%;
+  }
+
+  /* ── Date labels ── */
+  .date-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    position: relative;
+  }
+
+  .date-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .date-label.start { text-align: left; }
+  .date-label.end   { text-align: right; }
+
+  /* Today label below pin */
+  .today-label-wrap {
+    position: absolute;
+    transform: translateX(-50%);
+    top: 0;
+    text-align: center;
+  }
+
+  .today-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--red);
+    white-space: nowrap;
+    display: block;
+  }
+
+  /* ── Monthly ticks ── */
+  .ticks {
+    position: relative;
+    height: 16px;
+    margin-top: 6px;
+  }
+
+  .tick {
+    position: absolute;
+    transform: translateX(-50%);
+    text-align: center;
+  }
+
+  .tick-mark {
+    width: 1px;
+    height: 6px;
+    background: var(--border);
+    margin: 0 auto 3px;
+  }
+
+  .tick-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* ── Status pill ── */
+  .status-row {
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+
+  .pill.active {
+    background: #E1F5EE;
+    color: var(--teal-dk);
+    border: 1px solid var(--teal-lt);
+  }
+
+  .pill.complete-pill {
+    background: #E6F1FB;
+    color: #042C53;
+    border: 1px solid #B5D4F4;
+  }
+
+  .pill.not-started {
+    background: var(--bg);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .pill.active {
+      background: #04342C;
+      color: #9FE1CB;
+      border-color: #0F6E56;
+    }
+    .pill.complete-pill {
+      background: #042C53;
+      color: #B5D4F4;
+      border-color: #185FA5;
+    }
+  }
+
+  .pulse {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--teal);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(0.7); }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="header">
+    <span class="title">Team Typhoon — World Finals</span>
+    <span class="date-today" id="date-display"></span>
+  </div>
+
+  <div class="stats">
+    <div class="stat complete">
+      <div class="stat-value" id="pct">—</div>
+      <div class="stat-label">Complete</div>
+    </div>
+    <div class="stat elapsed">
+      <div class="stat-value" id="elapsed">—</div>
+      <div class="stat-label">Days elapsed</div>
+    </div>
+    <div class="stat remain">
+      <div class="stat-value" id="remain">—</div>
+      <div class="stat-label">Days remaining</div>
+    </div>
+  </div>
+
+  <div class="track-wrap">
+    <div class="track">
+      <div class="track-fill" id="fill"></div>
+      <div class="today-pin" id="pin"></div>
+    </div>
+    <div class="ticks" id="ticks"></div>
+    <div class="date-labels">
+      <span class="date-label start">21 May 2026</span>
+      <div class="today-label-wrap" id="today-label-wrap">
+        <span class="today-label" id="today-label"></span>
+      </div>
+      <span class="date-label end">21 Sep 2026</span>
+    </div>
+  </div>
+
+  <div class="status-row">
+    <div class="pill active" id="status-pill">
+      <span class="pulse" id="pulse-dot"></span>
+      <span id="status-text">In progress</span>
+    </div>
+    <span style="font-size:12px; color:var(--muted)" id="status-sub"></span>
+  </div>
+</div>
+
+<script>
+  const START = new Date('2026-05-21T00:00:00');
+  const END   = new Date('2026-09-21T00:00:00');
+  const TODAY = new Date();
+  TODAY.setHours(0,0,0,0);
+
+  const total   = Math.round((END - START)   / 86400000);
+  const elapsed = Math.round((TODAY - START) / 86400000);
+  const remain  = Math.round((END - TODAY)   / 86400000);
+  const pct     = Math.min(100, Math.max(0, (elapsed / total) * 100));
+
+  // Header date
+  document.getElementById('date-display').textContent = TODAY.toLocaleDateString('en-AU', {
+    day: 'numeric', month: 'long', year: 'numeric'
+  });
+
+  // Stats
+  document.getElementById('pct').textContent     = pct.toFixed(1) + '%';
+  document.getElementById('elapsed').textContent = Math.max(0, elapsed);
+  document.getElementById('remain').textContent  = Math.max(0, remain);
+
+  // Track fill + pin
+  const clampedPct = Math.min(100, Math.max(0, pct));
+  document.getElementById('fill').style.width = clampedPct + '%';
+  document.getElementById('pin').style.left   = clampedPct + '%';
+
+  // Today label
+  const todayFmt = TODAY.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+  document.getElementById('today-label').textContent = todayFmt;
+  document.getElementById('today-label-wrap').style.left = clampedPct + '%';
+
+  // Monthly ticks
+  const tickDates = [
+    { label: '21 Jun', date: new Date('2026-06-21') },
+    { label: '21 Jul', date: new Date('2026-07-21') },
+    { label: '21 Aug', date: new Date('2026-08-21') },
+  ];
+
+  const ticksEl = document.getElementById('ticks');
+  tickDates.forEach(t => {
+    const p = ((t.date - START) / (END - START)) * 100;
+    const div = document.createElement('div');
+    div.className = 'tick';
+    div.style.left = p + '%';
+    div.innerHTML = `<div class="tick-mark"></div><span class="tick-label">${t.label}</span>`;
+    ticksEl.appendChild(div);
+  });
+
+  // Status pill
+  const pill   = document.getElementById('status-pill');
+  const pulse  = document.getElementById('pulse-dot');
+  const stText = document.getElementById('status-text');
+  const stSub  = document.getElementById('status-sub');
+
+  if (elapsed < 0) {
+    pill.className = 'pill not-started';
+    pulse.style.display = 'none';
+    stText.textContent = 'Not started';
+    stSub.textContent  = 'Begins ' + START.toLocaleDateString('en-AU', { day: 'numeric', month: 'long' });
+  } else if (elapsed >= total) {
+    pill.className = 'pill complete-pill';
+    pulse.style.display = 'none';
+    stText.textContent = 'Complete';
+    stSub.textContent  = 'Project period ended';
+  } else {
+    stText.textContent = 'In progress';
+    stSub.textContent  = total + ' day project — ' + elapsed + ' elapsed, ' + remain + ' remaining';
+  }
+</script>
+</body>
+</html>
